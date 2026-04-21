@@ -218,8 +218,8 @@ the agent calls `get_artist_energy` for each artist before building the schedule
 ### ADK Runner — call an agent without an HTTP server
 
 The A2A protocol is great for inter-agent communication, but ADK also has a
-lower-level `Runner` API for calling an agent directly in-process — no HTTP,
-no uvicorn. This is how `to_a2a()` works internally.
+lower-level `Runner` API ([docs](https://adk.dev/runtime/event-loop/)) for
+calling an agent directly in-process — no HTTP, no uvicorn. This is how `to_a2a()` works internally.
 
 Create a small script `scripts/run_scout.py` and try it:
 
