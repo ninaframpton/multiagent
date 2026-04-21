@@ -184,8 +184,9 @@ image generator.
 
 ### ADK callbacks — watch the Lineup agent think
 
-ADK lets you hook into an agent's tool calls with `after_tool_callback`. Add one
-to the Lineup agent so you can watch it score each artist in real time.
+ADK lets you hook into an agent's tool calls with `after_tool_callback`
+([docs](https://google.github.io/adk-docs/callbacks/types-of-callbacks/)).
+Add one to the Lineup agent so you can watch it score each artist in real time.
 
 In `agents/lineup/server.py`, define a callback and pass it to the `LlmAgent`:
 
