@@ -62,23 +62,9 @@ The Lineup agent is a good example of how **ADK `FunctionTool`s** work. The `Llm
 - `get_artist_energy(name, genre)` — calls Gemini to rate one artist's crowd energy 1–10
 - `build_lineup_tool(artist_list_json)` — builds the final schedule
 
-The agent decides *when* to call each tool, what arguments to pass, and uses the results to reason about placement. When you run it with logging enabled you can watch it call `get_artist_energy` once per artist before building the schedule.
+The agent decides *when* to call each tool, what arguments to pass, and uses the results to reason about placement.
 
 This is the pattern you'll follow for the Hype agent — except your agent will have two tools instead of three.
-
-Start Scout and Lineup to see them in action:
-
-```bash
-uv run uvicorn agents.scout.server:app --port 8001 &
-uv run uvicorn agents.lineup.server:app --port 8002 &
-```
-
-Check the agent cards to see how each agent describes its own tools:
-
-```bash
-curl http://localhost:8001/.well-known/agent-card.json | python3 -m json.tool
-curl http://localhost:8002/.well-known/agent-card.json | python3 -m json.tool
-```
 
 ---
 
@@ -177,8 +163,6 @@ then assemble the `FestivalProgram`. All imports are already at the top of the f
 
 ```python
 async def run_pipeline(vibe: str) -> FestivalProgram:
-    config = get_config()
-
     # 1. Scout — send the vibe, get back artist JSON
     artist_json = await call_agent(SCOUT_URL, vibe)
 

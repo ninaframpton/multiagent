@@ -4,11 +4,11 @@
 
 Your job: implement write_announcement() by calling ask() with a prompt that
 includes the lineup JSON and instructs Gemini to write an exciting 2–3 sentence
-crowd announcement.
+crowd announcement mentioning the headline act.
 
-The announcement should mention the headline act and the festival name.
-The festival name comes from get_festival_name() — a tool you'll wire into
-the LlmAgent in server.py.
+The LlmAgent in server.py calls get_festival_name() as a tool *before* calling
+write_announcement(), so Gemini already has the festival name in context when
+it calls this tool — you don't need to look it up here.
 """
 
 from shared.config import get_config
@@ -39,8 +39,13 @@ async def write_announcement(lineup_json: str) -> str:
         A 2–3 sentence announcement string to be read out to the crowd.
 
     Example return value:
-        "Welcome to FestBot 2026! Tonight's headline act Crater Club will
-        close out the Main Stage at 22:00 with their trademark pounding
-        techno. Get ready for the night of your life!"
+        "Tonight's headline act Crater Club will close out the Main Stage
+        at 22:00 with their trademark pounding techno.
+        Get ready for the night of your life!"
+
+    Note:
+        The LlmAgent in server.py calls get_festival_name_tool() *before*
+        calling this tool, so Gemini already has the festival name in context.
+        You don't need to pass it as a parameter here.
     """
     raise NotImplementedError("Implement write_announcement() — see TASK.md")

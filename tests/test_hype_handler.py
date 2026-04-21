@@ -9,8 +9,6 @@ They verify:
 
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from agents.hype.handler import get_festival_name, write_announcement
 from agents.lineup.handler import LineupResult
 from shared.models import LineupSlot
@@ -50,7 +48,6 @@ def test_get_festival_name_returns_string() -> None:
     assert len(result) > 0
 
 
-@pytest.mark.asyncio
 async def test_write_announcement_returns_string() -> None:
     """write_announcement() should return a non-empty string."""
     with patch("agents.hype.handler.ask", AsyncMock(return_value=_FAKE_ANNOUNCEMENT)):
@@ -60,7 +57,6 @@ async def test_write_announcement_returns_string() -> None:
     assert len(result) > 0
 
 
-@pytest.mark.asyncio
 async def test_write_announcement_calls_ask_once() -> None:
     """write_announcement() must call ask() exactly once."""
     mock_ask = AsyncMock(return_value=_FAKE_ANNOUNCEMENT)
@@ -70,7 +66,6 @@ async def test_write_announcement_calls_ask_once() -> None:
     assert mock_ask.call_count == 1
 
 
-@pytest.mark.asyncio
 async def test_write_announcement_includes_lineup_in_prompt() -> None:
     """The lineup JSON must appear in the ask() prompt."""
     mock_ask = AsyncMock(return_value=_FAKE_ANNOUNCEMENT)

@@ -40,7 +40,7 @@ PORT = 8003
 #
 # async def write_announcement_tool(lineup_json: str) -> str:
 #     """Write a crowd announcement for the given lineup JSON."""
-#     ...
+#     return await _write_announcement(lineup_json)
 
 
 # ── Step 2: create the LlmAgent ───────────────────────────────────────────────

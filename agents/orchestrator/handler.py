@@ -17,7 +17,6 @@ import logging
 
 from agents.orchestrator.client import call_agent
 from agents.lineup.handler import LineupResult
-from shared.config import get_config
 from shared.models import FestivalProgram
 
 logger = logging.getLogger(__name__)
@@ -43,6 +42,5 @@ async def run_pipeline(vibe: str) -> FestivalProgram:
         - call_agent(url, text) sends a message and returns the text artifact.
         - Each agent's output JSON is the next agent's input text.
         - The headline is the artist in the last slot (sorted by time).
-        - config = get_config() gives you the festival name, stages, etc.
     """
     raise NotImplementedError("Implement run_pipeline() — see TASK.md")

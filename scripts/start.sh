@@ -43,6 +43,15 @@ wait_for_agent_card() {
 
 trap cleanup EXIT
 
+# Abort early if any TODO files haven't been implemented yet.
+for file in agents/hype/handler.py agents/hype/server.py agents/orchestrator/handler.py; do
+    if grep -q "NotImplementedError" "$ROOT/$file" 2>/dev/null; then
+        echo "❌  $file still has NotImplementedError."
+        echo "    Complete all three parts in TASK.md before running this script."
+        exit 1
+    fi
+done
+
 start_agent() {
     local name="$1"
     local module="$2"
@@ -83,7 +92,7 @@ echo "    http://localhost:8002/.well-known/agent-card.json  (Lineup)"
 echo "    http://localhost:8003/.well-known/agent-card.json  (Hype)"
 echo ""
 echo "Run the demo:       uv run python main.py \"summer indie road trip\""
-echo "Stop all agents:    kill \$(lsof -ti:8000,8001,8002,8003)"
+echo "Stop all agents:    kill \$(fuser 8000/tcp 8001/tcp 8002/tcp 8003/tcp 2>/dev/null)"
 
 trap - EXIT
 
