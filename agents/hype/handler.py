@@ -43,12 +43,4 @@ async def write_announcement(lineup_json: str) -> str:
         close out the Main Stage at 22:00 with their trademark pounding
         techno. Get ready for the night of your life!"
     """
-    festival_name = get_festival_name()
-    reply = await ask(
-        f"Festival name: {festival_name}\n\n"
-        f"Here is the festival lineup JSON:\n{lineup_json}\n\n"
-        "Write a 2-3 sentence crowd announcement. Mention the headline act "
-        "and build excitement for the audience.",
-        system="You are an enthusiastic festival MC.",
-    )
-    return reply
+    raise NotImplementedError("Implement write_announcement() — see TASK.md")

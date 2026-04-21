@@ -32,34 +32,43 @@ from agents.hype.handler import write_announcement as _write_announcement
 
 PORT = 8003
 
-def get_festival_name_tool() -> str:
-    """Return the festival name."""
-    return _get_festival_name()
+# ── Step 1: write tool functions ──────────────────────────────────────────────
+#
+# def get_festival_name_tool() -> str:
+#     """Return the festival name."""
+#     return _get_festival_name()
+#
+# async def write_announcement_tool(lineup_json: str) -> str:
+#     """Write a crowd announcement for the given lineup JSON."""
+#     ...
 
 
-async def write_announcement_tool(lineup_json: str) -> str:
-    """Write a crowd announcement for the given lineup JSON."""
-    return await _write_announcement(lineup_json)
+# ── Step 2: create the LlmAgent ───────────────────────────────────────────────
+#
+# agent = LlmAgent(
+#     name="hype_agent",
+#     model="gemini-2.0-flash",
+#     description="...",
+#     instruction=(
+#         "You are a festival MC. "
+#         "First call get_festival_name_tool() to find the festival name. "
+#         "Then call write_announcement_tool() with the lineup JSON you received. "
+#         "Return the announcement text verbatim."
+#     ),
+#     tools=[
+#         FunctionTool(func=get_festival_name_tool),
+#         FunctionTool(func=write_announcement_tool),
+#     ],
+# )
 
 
-agent = LlmAgent(
-    name="hype_agent",
-    model="gemini-2.0-flash",
-    description="Writes a crowd announcement for the festival lineup.",
-    instruction=(
-        "You are a festival MC. "
-        "First call get_festival_name_tool() to find the festival name. "
-        "Then call write_announcement_tool() with the lineup JSON you received. "
-        "Return the announcement text verbatim."
-    ),
-    tools=[
-        FunctionTool(func=get_festival_name_tool),
-        FunctionTool(func=write_announcement_tool),
-    ],
-)
+# ── Step 3: build the A2A app ─────────────────────────────────────────────────
+#
+# app = to_a2a(agent, host="localhost", port=PORT)
 
 
-app = to_a2a(agent, host="localhost", port=PORT)
+# Delete this line once you have defined `app` above:
+raise NotImplementedError("Implement agents/hype/server.py — see TASK.md")
 
 
 if __name__ == "__main__":

@@ -45,19 +45,4 @@ async def run_pipeline(vibe: str) -> FestivalProgram:
         - The headline is the artist in the last slot (sorted by time).
         - config = get_config() gives you the festival name, stages, etc.
     """
-    config = get_config()
-
-    logger.info("Running pipeline for %s", vibe)
-    artist_json = await call_agent(SCOUT_URL, vibe)
-    lineup_json = await call_agent(LINEUP_URL, artist_json)
-    announcement = await call_agent(HYPE_URL, lineup_json)
-
-    lineup = LineupResult.model_validate_json(lineup_json)
-    headline = lineup.slots[-1].artist if lineup.slots else config.name
-
-    return FestivalProgram(
-        vibe=vibe,
-        headline=headline,
-        slots=lineup.slots,
-        announcement=announcement,
-    )
+    raise NotImplementedError("Implement run_pipeline() — see TASK.md")
