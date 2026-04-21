@@ -56,7 +56,7 @@ LASTFM_API_KEY=your_key_here   # https://www.last.fm/api/account/create
 
 Before writing any code, read [agents/lineup/server.py](agents/lineup/server.py).
 
-The Lineup agent is a good example of how **ADK `FunctionTool`s** work. The `LlmAgent` has three tools it can call itself:
+The Lineup agent is a good example of how [**ADK `FunctionTool`s**](https://google.github.io/adk-docs/tools-custom/function-tools/) work. The [`LlmAgent`](https://google.github.io/adk-docs/agents/llm-agents/) has three tools it can call itself:
 
 - `get_stages()` — reads stage names from `config.yaml`
 - `get_artist_energy(name, genre)` — calls Gemini to rate one artist's crowd energy 1–10
@@ -175,7 +175,7 @@ image generator.
 
 ## 💡 Stretch goals
 
-- **ADK Parallel workflow**: in `agents/orchestrator/server.py`, replace the single Scout step with a `ParallelAgent` that runs two Scout sub-steps (for example, one with the user vibe and one with a slightly broader variant), then merge/deduplicate artists before sending to Lineup
+- **ADK Parallel workflow** ([docs](https://google.github.io/adk-docs/agents/workflow-agents/parallel-agents/)): in `agents/orchestrator/server.py`, replace the single Scout step with a `ParallelAgent` that runs two Scout sub-steps (for example, one with the user vibe and one with a slightly broader variant), then merge/deduplicate artists before sending to Lineup
 - **Add a fourth agent**: create a `Poster` agent that takes the `FestivalProgram` and returns formatted text suitable for social media
 
 ---
