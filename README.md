@@ -34,12 +34,12 @@ agents/
 │   ├── server.py    ✅ provided — ADK LlmAgent + to_a2a()
 │   └── handler.py   ✅ provided — build_lineup() with LLM reasoning
 ├── hype/
-│   ├── server.py    🔧 TODO Part 2 — build the A2A server
-│   └── handler.py   🔧 TODO Part 1 — write_announcement()
+│   ├── server.py    ✅ solution — ADK LlmAgent + to_a2a()
+│   └── handler.py   ✅ solution — write_announcement()
 └── orchestrator/
     ├── server.py    ✅ provided — ADK LlmAgent + to_a2a()
     ├── client.py    ✅ provided — call_agent() helper
-    └── handler.py   🔧 TODO Part 3 — run_pipeline()
+    └── handler.py   ✅ solution — run_pipeline()
 
 shared/
 └── models.py        ✅ Artist, LineupSlot, FestivalProgram

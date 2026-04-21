@@ -6,9 +6,9 @@ This file defines the conventions for this project. Follow them consistently acr
 
 ## Project Overview
 
-FestBot is a Python multi-agent system built on the [A2A protocol](https://github.com/google/a2a) (`a2a-sdk`). Each agent is a FastAPI app built with `A2AFastAPIApplication`. The project uses `uv` for package management and targets Python ≥ 3.12.
+FestBot is a Python multi-agent system built on the [A2A protocol](https://github.com/google/a2a) and [Google ADK](https://github.com/google/adk-python). Each agent is an `LlmAgent` exposed via `to_a2a()`. The project uses `uv` for package management and targets Python ≥ 3.12.
 
-**The only files participants need to touch are the four `handler.py` files.** Everything else is scaffolded.
+**The only files participants need to touch are the `handler.py` files.** Everything else is scaffolded.
 
 ---
 
@@ -37,7 +37,7 @@ async def scout(v):
 
 ```
 agents/<name>/
-    server.py     # A2AFastAPIApplication setup — do not edit
+    server.py     # LlmAgent + to_a2a() setup — do not edit
     handler.py    # Business logic — this is what you implement
 shared/
     models.py     # Pydantic models — do not edit
@@ -55,21 +55,27 @@ tests/
 ### Server (already wired in each `server.py`)
 
 ```python
-from a2a.server.agent_execution import AgentExecutor, RequestContext
-from a2a.server.apps.jsonrpc.fastapi_app import A2AFastAPIApplication
-from a2a.server.events.event_queue import EventQueue
-from a2a.server.tasks.task_updater import TaskUpdater
-from a2a.utils.message import get_message_text
+from google.adk.agents import LlmAgent
+from google.adk.a2a.utils.agent_to_a2a import to_a2a
+from google.adk.tools import FunctionTool
 
-class MyExecutor(AgentExecutor):
-    async def execute(self, context: RequestContext, event_queue: EventQueue) -> None:
-        updater = TaskUpdater(event_queue, context.task_id or "", context.context_id or "")
-        await updater.start_work()
-        text = get_message_text(context.message)  # type: ignore[arg-type]
-        result = await my_handler(text)
-        await updater.add_artifact([Part(root=TextPart(text=result))], name="output")
-        await updater.complete()
+async def my_tool(input: str) -> str:
+    """Tool docstring — ADK uses this as the tool description."""
+    result = await my_handler(input)
+    return result.model_dump_json()
+
+agent = LlmAgent(
+    name="my_agent",
+    model="gemini-2.0-flash",
+    description="One-line agent description.",
+    instruction="Tell the agent what to do and how to use its tools.",
+    tools=[FunctionTool(func=my_tool)],
+)
+
+app = to_a2a(agent, host="localhost", port=PORT)
 ```
+
+`to_a2a()` auto-generates the agent card at `/.well-known/agent-card.json` and handles all JSON-RPC routing.
 
 ### Client (already implemented in `agents/orchestrator/client.py`)
 
@@ -83,18 +89,17 @@ result_json = await call_agent("http://localhost:8001", vibe)
 ### Pydantic models (in `shared/models.py`)
 
 ```
-Artist          — name, genre, description
-VibedArtist     — name, genre, description, energy_score (1–10)
-ScheduleSlot    — time, stage, artist, genre
-FestivalProgram — vibe, headline, slots, hype
+Artist          — name: str, genre: str, description: str
+ArtistList      — artists: list[Artist]
+LineupSlot      — time: str, stage: str, artist: str, genre: str, reason: str
+FestivalProgram — vibe: str, headline: str, slots: list[LineupSlot], announcement: str
 ```
 
 ### Handler-local models (defined in each `handler.py`)
 
 ```
-ArtistList      — agents/scout/handler.py
-VibedArtistList — agents/vibe/handler.py
-ScheduleResult  — agents/schedule/handler.py
+ArtistList      — agents/scout/handler.py   (also in shared/models.py)
+LineupResult    — agents/lineup/handler.py
 ```
 
 ---
@@ -102,7 +107,8 @@ ScheduleResult  — agents/schedule/handler.py
 ## Dependencies
 
 - Use **`uv`** to add packages: `uv add <package>`
-- **`a2a-sdk[http-server]`** — A2A protocol implementation
+- **`google-adk`** — LlmAgent, FunctionTool, to_a2a(), and orchestration primitives
+- **`a2a-sdk[http-server]`** — A2A protocol transport layer (used by ADK internally)
 - **Pydantic v2** — all data models use `.model_validate_json()` / `.model_dump_json()`
 - **`httpx`** (async) — used internally by `call_agent()`
 - **`uvicorn`** — ASGI server for each agent
@@ -118,7 +124,7 @@ ScheduleResult  — agents/schedule/handler.py
 
 ## Error Handling
 
-- Never let an unhandled exception escape a handler — the `AgentExecutor` in `server.py` will propagate it as an A2A error.
+- Never let an unhandled exception escape a handler — `to_a2a()` in `server.py` will propagate it as an A2A error.
 - Log with `logging`, not `print`. Configure logging at the entry point only.
 
 ```python
