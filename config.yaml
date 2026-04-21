@@ -1,0 +1,26 @@
+# FestBot configuration — edit this to personalise your festival!
+#
+# The vibe drives everything: the Scout Agent searches for artists
+# matching the genre, the Schedule Agent uses the stages and date,
+# and the Weather tool (if configured) fetches a forecast for the location.
+
+festival:
+  name: "FestBot 2026"
+
+  # The overall mood — passed to the Orchestrator as the user prompt.
+  vibe: "summer indie road trip"
+
+  # Genre tag sent to the Last.fm artist search (tools/lastfm.py).
+  # Try: indie, techno, jazz, hip-hop, ambient, punk, soul, folk ...
+  genre: "indie"
+
+  # Location and date used by the weather tool (tools/weather.py).
+  # Date must be within the next 5 days for the free OpenWeatherMap plan.
+  location: "London"
+  date: "2026-04-20"
+
+  # Stage names used by the Schedule Agent to assign slots.
+  stages:
+    - "Main Stage"
+    - "Forest Stage"
+    - "Acoustic Tent"

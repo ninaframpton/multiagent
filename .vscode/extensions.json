@@ -1,0 +1,16 @@
+{
+  "recommendations": [
+    // Python core
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-python.debugpy",
+    // Linting & formatting (install via: uv add --dev ruff)
+    "charliermarsh.ruff",
+    // TOML (pyproject.toml editing)
+    "tamasfe.even-better-toml",
+    // REST client — handy for testing A2A agent endpoints
+    "humao.rest-client",
+    // Git helpers
+    "eamodio.gitlens"
+  ]
+}
