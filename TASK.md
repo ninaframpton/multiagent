@@ -176,8 +176,86 @@ image generator.
 ## 💡 Stretch goals
 
 - **ADK Parallel workflow**: in `agents/orchestrator/server.py`, replace the single Scout step with a `ParallelAgent` that runs two Scout sub-steps (for example, one with the user vibe and one with a slightly broader variant), then merge/deduplicate artists before sending to Lineup
-- **Inspect the protocol**: add `print()` statements in `run_pipeline()` to log the raw JSON flowing between agents — see what A2A actually sends over the wire
 - **Add a fourth agent**: create a `Poster` agent that takes the `FestivalProgram` and returns formatted text suitable for social media
+
+---
+
+## 🔬 Going deeper with ADK
+
+### ADK callbacks — watch the Lineup agent think
+
+ADK lets you hook into an agent's tool calls with `after_tool_callback`. Add one
+to the Lineup agent so you can watch it score each artist in real time.
+
+In `agents/lineup/server.py`, define a callback and pass it to the `LlmAgent`:
+
+```python
+from google.adk.agents.llm_agent import AfterToolCallback
+from google.adk.tools.base_tool import BaseTool
+from google.adk.agents.context import Context
+
+def log_energy_score(
+    tool: BaseTool,
+    args: dict,
+    tool_context: Context,
+    tool_response: dict,
+) -> None:
+    if tool.name == "get_artist_energy":
+        print(f"  energy score → {args['name']}: {tool_response['result']}/10")
+
+agent = LlmAgent(
+    ...
+    after_tool_callback=log_energy_score,
+)
+```
+
+Restart the Lineup agent and run the pipeline — you'll see each score printed as
+the agent calls `get_artist_energy` for each artist before building the schedule.
+
+---
+
+### ADK Runner — call an agent without an HTTP server
+
+The A2A protocol is great for inter-agent communication, but ADK also has a
+lower-level `Runner` API for calling an agent directly in-process — no HTTP,
+no uvicorn. This is how `to_a2a()` works internally.
+
+Create a small script `scripts/run_scout.py` and try it:
+
+```python
+import asyncio
+from google.adk.runners import Runner
+from google.adk.sessions import InMemorySessionService
+from google.genai import types
+from agents.scout.server import agent  # the LlmAgent you already have
+
+async def main() -> None:
+    session_service = InMemorySessionService()
+    session = await session_service.create_session(
+        app_name="festbot", user_id="dev"
+    )
+    runner = Runner(
+        app_name="festbot",
+        agent=agent,
+        session_service=session_service,
+    )
+    async for event in runner.run_async(
+        user_id="dev",
+        session_id=session.id,
+        new_message=types.Content(
+            role="user",
+            parts=[types.Part(text="summer indie road trip")],
+        ),
+    ):
+        if event.is_final_response():
+            print(event.content.parts[0].text)
+
+asyncio.run(main())
+```
+
+Run it with `uv run python scripts/run_scout.py`. Compare what you get back to
+what `call_agent("http://localhost:8001", "summer indie road trip")` returns —
+they're the same agent, just reached two different ways.
 
 ---
 
