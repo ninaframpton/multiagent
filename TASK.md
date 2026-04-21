@@ -72,22 +72,12 @@ This is the pattern you'll follow for the Hype agent — except your agent will 
 
 **File:** `agents/hype/handler.py`
 
-`get_festival_name()` is already implemented — it reads the festival name from
-`config.yaml`. You just need to implement `write_announcement()`.
+`get_festival_name()` is already implemented. You just need to implement
+`write_announcement()`.
 
-Call `ask()` with a prompt that includes the lineup JSON and tells Gemini to
-write a 2–3 sentence crowd announcement. Return the result as a plain string:
-
-```python
-async def write_announcement(lineup_json: str) -> str:
-    reply = await ask(
-        f"Here is the festival lineup:\n{lineup_json}\n\n"
-        "Write a 2-3 sentence announcement to read out to the crowd. "
-        "Mention the headline act and get people excited.",
-        system="You are an enthusiastic festival MC.",
-    )
-    return reply
-```
+Call `ask()` (already imported) with a prompt that includes the lineup JSON
+and a system instruction telling Gemini it's a festival MC. Return the reply
+as a plain string.
 
 Run the tests to check — no API key needed, `ask()` is mocked:
 
@@ -107,43 +97,9 @@ then call `write_announcement_tool` with the lineup JSON.
 
 Follow the three-step pattern from [agents/lineup/server.py](agents/lineup/server.py):
 
-**Step 1** — wrap each handler function in a tool function:
-
-```python
-def get_festival_name_tool() -> str:
-    """Return the festival name from config."""
-    return _get_festival_name()
-
-async def write_announcement_tool(lineup_json: str) -> str:
-    """Write a crowd announcement for the given lineup JSON."""
-    return await _write_announcement(lineup_json)
-```
-
-**Step 2** — create the `LlmAgent` with both tools:
-
-```python
-agent = LlmAgent(
-    name="hype_agent",
-    model="gemini-2.0-flash",
-    description="Writes a crowd announcement for the festival lineup.",
-    instruction=(
-        "You are a festival MC. "
-        "First call get_festival_name_tool() to find the festival name. "
-        "Then call write_announcement_tool() with the lineup JSON you received. "
-        "Return the announcement text verbatim."
-    ),
-    tools=[
-        FunctionTool(func=get_festival_name_tool),
-        FunctionTool(func=write_announcement_tool),
-    ],
-)
-```
-
-**Step 3** — build the app and delete the `NotImplementedError`:
-
-```python
-app = to_a2a(agent, host="localhost", port=PORT)
-```
+1. Write a tool function wrapping each handler function
+2. Create an `LlmAgent` with both tools and an `instruction` telling it to call `get_festival_name_tool` first, then `write_announcement_tool`
+3. Call `to_a2a(agent, host="localhost", port=PORT)` to produce `app`, and delete the `NotImplementedError`
 
 Verify your agent card appears:
 
