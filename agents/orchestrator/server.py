@@ -50,6 +50,8 @@ def assemble_program_tool(vibe: str, lineup_json: str, announcement: str) -> str
         announcement=announcement,
     )
     return program.model_dump_json(indent=2)
+
+
 agent = SequentialAgent(
     name="orchestrator_workflow",
     description=(

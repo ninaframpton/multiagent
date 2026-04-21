@@ -1,17 +1,4 @@
-"""Orchestrator handler — coordinates the full Scout → Lineup → Hype pipeline.
-
-🔧 TODO: This is the third file you implement (Part 3 of 3).
-
-Your job: call each downstream agent in sequence using call_agent(), then
-assemble the results into a FestivalProgram.
-
-The pipeline is:
-    vibe (str)
-      → Scout  :8001  → ArtistList JSON
-      → Lineup :8002  → LineupResult JSON  (slots with reasons)
-      → Hype   :8003  → announcement (plain text)
-      → FestivalProgram
-"""
+"""Orchestrator handler — coordinates the full Scout → Lineup → Hype pipeline."""
 
 import logging
 
@@ -39,11 +26,6 @@ async def run_pipeline(vibe: str) -> FestivalProgram:
     Returns:
         A FestivalProgram with vibe, headline, slots, and announcement.
 
-    Hints:
-        - call_agent(url, text) sends a message and returns the text artifact.
-        - Each agent's output JSON is the next agent's input text.
-        - The headline is the artist in the last slot (sorted by time).
-        - config = get_config() gives you the festival name, stages, etc.
     """
     config = get_config()
 

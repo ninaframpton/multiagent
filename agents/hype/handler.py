@@ -1,15 +1,4 @@
-"""Hype Agent handler — write a crowd announcement for the festival lineup.
-
-🔧 TODO: This is the first file you implement (Part 1 of 3).
-
-Your job: implement write_announcement() by calling ask() with a prompt that
-includes the lineup JSON and instructs Gemini to write an exciting 2–3 sentence
-crowd announcement.
-
-The announcement should mention the headline act and the festival name.
-The festival name comes from get_festival_name() — a tool you'll wire into
-the LlmAgent in server.py.
-"""
+"""Hype Agent handler — write a crowd announcement for the festival lineup."""
 
 from shared.config import get_config
 from tools.llm import ask

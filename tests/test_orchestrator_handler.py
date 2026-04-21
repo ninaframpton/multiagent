@@ -7,8 +7,6 @@ and assembles a valid FestivalProgram.
 
 from unittest.mock import AsyncMock, patch
 
-import pytest
-
 from agents.lineup.handler import LineupResult
 from agents.orchestrator.handler import run_pipeline
 from shared.models import Artist, ArtistList, FestivalProgram, LineupSlot
@@ -51,7 +49,6 @@ def _make_mock() -> AsyncMock:
 
 # ── Tests ─────────────────────────────────────────────────────────────────────
 
-@pytest.mark.asyncio
 async def test_run_pipeline_returns_festival_program() -> None:
     """run_pipeline() should return a FestivalProgram."""
     with patch("agents.orchestrator.handler.call_agent", _make_mock()):
@@ -60,7 +57,6 @@ async def test_run_pipeline_returns_festival_program() -> None:
     assert isinstance(result, FestivalProgram)
 
 
-@pytest.mark.asyncio
 async def test_run_pipeline_calls_all_three_agents() -> None:
     """run_pipeline() must call Scout, Lineup, and Hype — in that order."""
     mock = _make_mock()
@@ -74,7 +70,6 @@ async def test_run_pipeline_calls_all_three_agents() -> None:
     assert "8003" in urls[2], "Third call should go to Hype (:8003)"
 
 
-@pytest.mark.asyncio
 async def test_run_pipeline_chains_outputs_as_inputs() -> None:
     """Each agent's output must be passed as the next agent's input."""
     mock = _make_mock()
@@ -86,7 +81,6 @@ async def test_run_pipeline_chains_outputs_as_inputs() -> None:
     assert calls[2].args[1] == _LINEUP_JSON, "Hype should receive Lineup's output"
 
 
-@pytest.mark.asyncio
 async def test_run_pipeline_headline_is_last_slot_by_time() -> None:
     """The headline should be the artist in the latest time slot."""
     with patch("agents.orchestrator.handler.call_agent", _make_mock()):
@@ -95,7 +89,6 @@ async def test_run_pipeline_headline_is_last_slot_by_time() -> None:
     assert result.headline == "Crater Club"
 
 
-@pytest.mark.asyncio
 async def test_run_pipeline_announcement_comes_from_hype() -> None:
     """The announcement in FestivalProgram should be what Hype returned."""
     with patch("agents.orchestrator.handler.call_agent", _make_mock()):
@@ -104,7 +97,6 @@ async def test_run_pipeline_announcement_comes_from_hype() -> None:
     assert result.announcement == _ANNOUNCEMENT
 
 
-@pytest.mark.asyncio
 async def test_run_pipeline_slots_match_lineup() -> None:
     """The FestivalProgram slots should match what Lineup returned."""
     with patch("agents.orchestrator.handler.call_agent", _make_mock()):
