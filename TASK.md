@@ -28,6 +28,8 @@ Four agents communicate over the A2A protocol. Three are already built and runni
 
 The key idea: each agent is a **separate HTTP server**. They don't import each other's code. The Orchestrator connects them purely by passing messages — one agent's JSON output becomes the next agent's text input.
 
+**Why A2A instead of one big agent?** A single agent that does everything is hard to test, hard to swap out, and hits context limits fast. A2A lets you give each agent a clear job, test it in isolation, and replace or scale any one piece without touching the others. It also means agents can be written in different languages or run on different machines — they only need to speak the same protocol.
+
 ---
 
 ## Step 0 — Setup (2 min)
@@ -114,37 +116,31 @@ curl http://localhost:8003/.well-known/agent-card.json | python3 -m json.tool
 
 **File:** `agents/orchestrator/handler.py`
 
-Implement `run_pipeline()`. Call each agent in sequence using `call_agent()`,
-then assemble the `FestivalProgram`. All imports are already at the top of the file.
+Implement `run_pipeline()`. All imports and the URL constants are already at the
+top of the file.
 
-```python
-async def run_pipeline(vibe: str) -> FestivalProgram:
-    # 1. Scout — send the vibe, get back artist JSON
-    artist_json = await call_agent(SCOUT_URL, vibe)
+Call `call_agent()` three times in sequence — send the vibe to Scout, pass
+Scout's output to Lineup, pass Lineup's output to Hype. Each call returns a
+plain string (JSON or text).
 
-    # 2. Lineup — send artist JSON, get back lineup JSON
-    lineup_json = await call_agent(LINEUP_URL, artist_json)
-
-    # 3. Hype — send lineup JSON, get back an announcement string
-    announcement = await call_agent(HYPE_URL, lineup_json)
-
-    # 4. Parse the lineup and assemble the program
-    lineup = LineupResult.model_validate_json(lineup_json)
-    headline = lineup.slots[-1].artist  # last slot by time = headliner
-
-    return FestivalProgram(
-        vibe=vibe,
-        headline=headline,
-        slots=lineup.slots,
-        announcement=announcement,
-    )
-```
+Once you have all three responses, parse the lineup JSON into a `LineupResult`,
+pull the headliner from the slots, and return a fully assembled `FestivalProgram`.
 
 Run all tests:
 
 ```bash
 uv run pytest -v
 ```
+
+---
+
+## Debugging tips
+
+- **Agent won't start?** Check the terminal for a Python traceback — usually a missing import or a syntax error in `server.py`.
+- **`curl` returns nothing or a connection error?** The agent process probably crashed on startup. Re-run `uv run uvicorn agents.hype.server:app --port 8003` directly to see the error.
+- **A2A error response in the pipeline?** Each `call_agent()` call returns the agent's text reply. If an agent crashes mid-request, `to_a2a()` wraps the exception in a JSON-RPC error — you'll see it printed as the return value. Read the `message` field to find which agent failed and why.
+- **Tests failing?** Run a single test file with `-v` to isolate the failure: `uv run pytest tests/test_hype_handler.py -v`. Handler tests don't need running servers or API keys — if they fail it's a logic error in your handler.
+- **Logs:** each agent logs to stdout. In `start.sh` output, lines are prefixed by agent name so you can tell which agent is speaking.
 
 ---
 
@@ -186,32 +182,13 @@ image generator.
 
 ADK lets you hook into an agent's tool calls with `after_tool_callback`
 ([docs](https://google.github.io/adk-docs/callbacks/types-of-callbacks/)).
-Add one to the Lineup agent so you can watch it score each artist in real time.
+Add one to the Lineup agent in `agents/lineup/server.py` so you can watch it
+score each artist in real time.
 
-In `agents/lineup/server.py`, define a callback and pass it to the `LlmAgent`:
-
-```python
-from google.adk.agents.llm_agent import AfterToolCallback
-from google.adk.tools.base_tool import BaseTool
-from google.adk.agents.context import Context
-
-def log_energy_score(
-    tool: BaseTool,
-    args: dict,
-    tool_context: Context,
-    tool_response: dict,
-) -> None:
-    if tool.name == "get_artist_energy":
-        print(f"  energy score → {args['name']}: {tool_response['result']}/10")
-
-agent = LlmAgent(
-    ...
-    after_tool_callback=log_energy_score,
-)
-```
-
-Restart the Lineup agent and run the pipeline — you'll see each score printed as
-the agent calls `get_artist_energy` for each artist before building the schedule.
+Define a callback function that checks `tool.name` and logs the result when
+`get_artist_energy` is called, then pass it to `LlmAgent` via the
+`after_tool_callback` parameter. Restart the Lineup agent and run the pipeline
+to see each score printed as the agent reasons about placement.
 
 ---
 
